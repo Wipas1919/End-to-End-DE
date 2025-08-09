@@ -1,21 +1,7 @@
 version: '3.8'
 
-# On-Premise Data Platform - Docker Compose Configuration
-# 
-# Team Responsibilities:
-# - Data Platform Team: Manages all application services, databases, and monitoring
-# - Infrastructure Team: Manages underlying infrastructure (servers, network, storage)
-#
-# Collaboration Points:
-# - Resource requirements provided to Infrastructure team
-# - Network configuration coordinated with Infrastructure team
-# - Security requirements defined by Data Platform team, implemented by Infrastructure team
-
 services:
-  # =============================================================================
-  # DATABASE & STORAGE LAYER (Data Platform Team)
-  # =============================================================================
-  
+  # Database & Storage Layer
   mysql:
     image: mysql:8.0
     container_name: data-platform-mysql
@@ -30,10 +16,6 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 2 cores
-    # - RAM: 8GB
-    # - Storage: 200GB SSD
 
   minio:
     image: minio/minio:latest
@@ -49,10 +31,6 @@ services:
     command: server /data --console-address ":9001"
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 2 cores
-    # - RAM: 4GB
-    # - Storage: 500GB SSD
 
   influxdb:
     image: influxdb:2.0
@@ -69,16 +47,8 @@ services:
       - influxdb_data:/var/lib/influxdb2
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 2 cores
-    # - RAM: 4GB
-    # - Storage: 200GB SSD
 
-  # =============================================================================
-  # PIPELINE & OPERATION LAYER (Data Platform Team)
-  # =============================================================================
-  
-  # Primary ETL Engine
+  # Pipeline & Operation Layer - Primary ETL Engine
   windmill:
     image: windmilllabs/windmill:latest
     container_name: data-platform-windmill
@@ -95,10 +65,6 @@ services:
       - windmill-db
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 4 cores
-    # - RAM: 8GB
-    # - Storage: 100GB SSD
 
   windmill-db:
     image: postgres:13
@@ -111,10 +77,6 @@ services:
       - windmill_db_data:/var/lib/postgresql/data
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 2GB
-    # - Storage: 50GB SSD
 
   # Alternative ETL Engine (Not in Use)
   airflow-webserver:
@@ -185,10 +147,7 @@ services:
     profiles:
       - alternative
 
-  # =============================================================================
-  # SECURITY & ACCESS LAYER (Data Platform Team)
-  # =============================================================================
-  
+  # Security & Access Layer
   kong:
     image: kong:latest
     container_name: data-platform-kong
@@ -213,10 +172,6 @@ services:
       - kong-database
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 2GB
-    # - Storage: 20GB SSD
 
   kong-database:
     image: postgres:13
@@ -229,15 +184,8 @@ services:
       - kong_data:/var/lib/postgresql/data
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 2GB
-    # - Storage: 50GB SSD
 
-  # =============================================================================
-  # GOVERNANCE & MONITORING LAYER (Data Platform Team)
-  # =============================================================================
-  
+  # Governance & Monitoring Layer
   open-metadata:
     image: openmetadata/openmetadata:latest
     container_name: data-platform-openmetadata
@@ -252,10 +200,6 @@ services:
       - mysql
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 2 cores
-    # - RAM: 4GB
-    # - Storage: 50GB SSD
 
   # Monitoring Stack
   prometheus:
@@ -268,10 +212,6 @@ services:
       - prometheus_data:/prometheus
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 2GB
-    # - Storage: 100GB SSD
 
   grafana:
     image: grafana/grafana:latest
@@ -284,15 +224,8 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 2GB
-    # - Storage: 50GB SSD
 
-  # =============================================================================
-  # ON-PREMISE VISUALIZATION & APPLICATIONS (Data Platform Team)
-  # =============================================================================
-  
+  # On-Premise Visualization & Applications
   streamlit:
     image: python:3.9-slim
     container_name: data-platform-streamlit
@@ -306,15 +239,8 @@ services:
                && streamlit run app.py --server.port=8501 --server.address=0.0.0.0"
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 2GB
-    # - Storage: 20GB SSD
 
-  # =============================================================================
-  # TOOLS & APPLICATION LAYER (Data Platform Team)
-  # =============================================================================
-  
+  # Tools & Application Layer
   portainer:
     image: portainer/portainer-ce:latest
     container_name: data-platform-portainer
@@ -325,15 +251,8 @@ services:
       - portainer_data:/data
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 1GB
-    # - Storage: 20GB SSD
 
-  # =============================================================================
-  # DATA QUALITY & VALIDATION SERVICE (Data Platform Team)
-  # =============================================================================
-  
+  # Data Quality & Validation Service
   data-quality:
     image: python:3.9-slim
     container_name: data-platform-data-quality
@@ -348,10 +267,6 @@ services:
       - influxdb
     networks:
       - data-network
-    # Resource requirements for Infrastructure team:
-    # - CPU: 1 core
-    # - RAM: 2GB
-    # - Storage: 20GB SSD
 
 volumes:
   mysql_data:
@@ -368,31 +283,3 @@ volumes:
 networks:
   data-network:
     driver: bridge
-
-# =============================================================================
-# INFRASTRUCTURE TEAM NOTES
-# =============================================================================
-#
-# Total Resource Requirements:
-# - CPU: 16 cores (8 cores for production, 4 cores for development, 4 cores for backup)
-# - RAM: 32GB (16GB for production, 8GB for development, 8GB for backup)
-# - Storage: 1.5TB (500GB for production, 250GB for development, 1TB for backup)
-# - Network: 1Gbps minimum
-#
-# Network Requirements:
-# - Internal subnet: 192.168.1.0/24
-# - External access required for Microsoft Fabric integration
-# - VPN access for secure remote management
-# - Firewall rules for all exposed ports
-#
-# Security Requirements:
-# - SSL certificates for external access
-# - Network segmentation
-# - Intrusion detection systems
-# - Regular security updates
-#
-# Backup Requirements:
-# - Daily automated backups
-# - Point-in-time recovery capability
-# - Cross-region replication
-# - Regular recovery testing
